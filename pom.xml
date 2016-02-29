@@ -13,6 +13,17 @@
         <url>https://github.com/ctruchi/restx-sql.git</url>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>4sh.artifactory.write</id>
+            <url>http://repo.4sh.fr/artifactory/libs-release-local/</url>
+        </repository>
+        <snapshotRepository>
+            <id>4sh.artifactory.write</id>
+            <url>http://repo.4sh.fr/artifactory/libs-snapshot-local/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.source>1.7</maven.compiler.source>
