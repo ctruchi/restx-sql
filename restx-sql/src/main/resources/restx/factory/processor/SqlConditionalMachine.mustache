@@ -1,0 +1,57 @@
+package {{package}};
+
+import com.google.common.collect.ImmutableSet;
+import restx.factory.*;
+import org.skife.jdbi.v2.sqlobject.PublicOnDemandHandleDing;
+import org.skife.jdbi.v2.sqlobject.SqlObjectUtils;
+{{#imports}}
+import {{.}};
+{{/imports}}
+
+@Machine
+public class {{machine}} extends SingleNameFactoryMachine<FactoryMachine> {
+    public static final Name<{{componentInjectionType}}> NAME = Name.of({{componentInjectionType}}.class, "{{componentInjectionName}}");
+
+    public {{machine}}() {
+        super(0, new StdMachineEngine<FactoryMachine>(
+                    Name.of(FactoryMachine.class, "{{conditionalFactoryMachineName}}"), BoundlessComponentBox.FACTORY) {
+                private Factory.Query<String> query = Factory.Query.byName(Name.of(String.class, "{{whenName}}")).optional();
+
+                @Override
+                protected FactoryMachine doNewComponent(SatisfiedBOM satisfiedBOM) {
+                    if (satisfiedBOM.getOne(query).isPresent()
+                            && satisfiedBOM.getOne(query).get().getComponent().equals("{{whenValue}}")) {
+                        return new SingleNameFactoryMachine<{{componentInjectionType}}>({{priority}},
+                                        new StdMachineEngine<{{componentInjectionType}}>(NAME, {{priority}}, BoundlessComponentBox.FACTORY) {
+{{queriesDeclarations}}
+            private final Factory.Query handleDing =
+                Factory.Query.byClass(PublicOnDemandHandleDing.class).mandatory();
+
+                                            @Override
+                                            public BillOfMaterials getBillOfMaterial() {
+                                                return new BillOfMaterials(ImmutableSet.<Factory.Query<?>>of(
+{{queries}}
+handleDing
+                                                ));
+                                            }
+
+                                            @Override
+                                            protected {{componentInjectionType}} doNewComponent(SatisfiedBOM satisfiedBOM) {
+                                                return SqlObjectUtils.buildSqlObject({{componentType}}.class,
+                                                    (PublicOnDemandHandleDing) ((NamedComponent) satisfiedBOM.getOne(handleDing).get()).getComponent(),
+                                                    new Class[]{ {{parameterClasses}} },
+                                                    new Object[]{ {{parameters}} });
+                                            }
+                                        });
+                    } else {
+                        return NoopFactoryMachine.INSTANCE;
+                    }
+                }
+
+                @Override
+                public BillOfMaterials getBillOfMaterial() {
+                    return BillOfMaterials.of(query);
+                }
+            });
+    }
+}

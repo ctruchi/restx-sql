@@ -1,0 +1,38 @@
+package {{package}};
+
+import com.google.common.collect.ImmutableSet;
+import restx.factory.*;
+import org.skife.jdbi.v2.sqlobject.PublicOnDemandHandleDing;
+import org.skife.jdbi.v2.sqlobject.SqlObjectUtils;
+import {{componentFqcn}};
+
+@Machine
+public class {{machine}} extends SingleNameFactoryMachine<{{componentProducedType}}> {
+    public static final Name<{{componentProducedType}}> NAME = Name.of({{componentProducedType}}.class, "{{componentInjectionName}}");
+
+    public {{machine}}() {
+        super({{priority}}, new StdMachineEngine<{{componentProducedType}}>(NAME, {{priority}}, BoundlessComponentBox.FACTORY) {
+{{queriesDeclarations}}
+        private final Factory.Query handleDing =
+            Factory.Query.byClass(PublicOnDemandHandleDing.class).mandatory();
+
+            @Override
+            public BillOfMaterials getBillOfMaterial() {
+                return new BillOfMaterials(ImmutableSet.<Factory.Query<?>>of(
+    {{queries}}
+    handleDing
+                ));
+            }
+
+            @Override
+            protected {{componentProducedType}} doNewComponent(SatisfiedBOM satisfiedBOM) {
+                return SqlObjectUtils.buildSqlObject({{componentType}}.class,
+                    (PublicOnDemandHandleDing) ((NamedComponent) satisfiedBOM.getOne(handleDing).get()).getComponent(),
+                    new Class[]{ {{parameterClasses}} },
+                    new Object[]{ {{parameters}} });
+            }
+        });
+    }
+
+}
+
