@@ -115,15 +115,24 @@ public class SqlObjectUtils {
         }
 
         final SqlObject so = new SqlObject(buildHandlersFor(sqlObjectType), handle);
-        return (T) f.newInstance(new Callback[] {
+        Callback[] callbacks = {
                 new MethodInterceptor() {
                     @Override
-                    public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+                    public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy)
+                            throws Throwable {
                         return so.invoke(o, method, objects, methodProxy);
                     }
                 },
                 NoOp.INSTANCE
-        });
+        };
+
+        Object instance;
+        if (constructorArgumentTypes.length > 0) {
+            instance = f.newInstance(constructorArgumentTypes, constructorArguments, callbacks);
+        } else {
+            instance = f.newInstance(callbacks);
+        }
+        return (T) instance;
     }
 
     private static Map<Method, Handler> buildHandlersFor(Class<?> sqlObjectType)
