@@ -309,7 +309,11 @@ public class SqlComponentAnnotationProcessor extends RestxAbstractProcessor {
     private List<String> buildParamClasses(List<InjectableParameter> parameters) {
         List<String> parameterClasses = Lists.newArrayList();
         for (InjectableParameter parameter : parameters) {
-            parameterClasses.add(parameter.baseType.toString() + ".class");
+            if (parameter.baseType instanceof DeclaredType) {
+                parameterClasses.add(((DeclaredType) parameter.baseType).asElement() + ".class");
+            } else {
+                parameterClasses.add(parameter.baseType.toString() + ".class");
+            }
         }
         return parameterClasses;
     }
